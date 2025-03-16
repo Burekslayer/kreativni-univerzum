@@ -37,7 +37,7 @@ app.get("/api/paintings", async (req, res) => {
     res.status(500).send("Server error");
   }
 });
-
+//kreativni-univerzum-production.up.railway.app
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
@@ -128,3 +128,7 @@ app.get("/api/auth/me", authMiddleware, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
