@@ -16,6 +16,9 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
+// ✅ Attach API Routes (Fix order)
+app.use("/api", apiRouter);
+
 // ✅ PostgreSQL Database Connection (Fix Port)
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -35,9 +38,12 @@ app.get("/api/test", (req, res) => {
   res.json({ message: "API is working!" });
 });
 
-// ✅ Attach API Routes (Fix order)
-app.use("/api", apiRouter);
-
+// ✅ Serve React Frontend (Keep this last)
+const __dirname = path.resolve();
+app.use(express.static(path.join(__dirname, "frontend", "build")));
+app.get("*", (req, res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "build", "index.html"));
+});
 
 // ✅ Start Express Server
 const PORT = process.env.PORT || 8000;
