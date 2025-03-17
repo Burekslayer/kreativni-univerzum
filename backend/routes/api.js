@@ -3,11 +3,14 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
 import pkg from "pg";
+
+const { Pool } = pkg;
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false } // ✅ Required for Railway PostgreSQL
+});
+
 const apiRouter = express.Router();
-
-
-
-
 
 // ✅ Debugging Log - Check if `api.js` is even being loaded
 console.log("✅ api.js is loaded!");
@@ -18,15 +21,28 @@ apiRouter.get("/test", (req, res) => {
   res.json({ message: "API is working!" });
 });
 
-
-
 // ✅ Debugging Log - Check if routes are added
 setTimeout(() => {
   console.log("✅ Routes inside apiRouter:");
   console.log(apiRouter.stack.map((route) => route.route?.path));
 }, 1000);
 
-// ✅ Register User
+apiRouter.post("/auth/register", async (req, res) => {
+  console.log("✅ Register Route Hit!");
+  console.log("➡ Request Body:", req.body);
+  res.json({ message: "Register is processing request!", requestData: req.body });
+});
+
+apiRouter.post("/auth/login", async (req, res) => {
+  console.log("✅ Login Route Hit!");
+  console.log("➡ Request Body:", req.body);
+  res.json({ message: "Login is processing request!", requestData: req.body });
+});
+
+
+
+
+/* // ✅ Register User
 apiRouter.post(
   "/auth/register",
   [
@@ -100,6 +116,6 @@ apiRouter.post(
       res.status(500).json({ message: "Server error" });
     }
   }
-);
+); */
 
 export default apiRouter;
