@@ -3,11 +3,28 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
 import pkg from "pg";
-
 const apiRouter = express.Router();
 
-// ✅ Use the existing database connection from `server.js`
-import { pool } from "../server.js"; // ✅ FIX: Import pool instead of creating a new one
+
+
+
+
+// ✅ Debugging Log - Check if `api.js` is even being loaded
+console.log("✅ api.js is loaded!");
+
+// ✅ Test Route
+apiRouter.get("/test", (req, res) => {
+  console.log("✅ Test Route Hit!");
+  res.json({ message: "API is working!" });
+});
+
+
+
+// ✅ Debugging Log - Check if routes are added
+setTimeout(() => {
+  console.log("✅ Routes inside apiRouter:");
+  console.log(apiRouter.stack.map((route) => route.route?.path));
+}, 1000);
 
 // ✅ Register User
 apiRouter.post(

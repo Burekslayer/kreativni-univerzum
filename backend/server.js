@@ -1,18 +1,9 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import pkg from "pg";
 import bodyParser from "body-parser";
-import apiRouter from "./routes/api.js";
 
 dotenv.config();
-
-const { Pool } = pkg;
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }, // ✅ Required for Railway PostgreSQL
-});
-
 const app = express();
 
 // ✅ Middleware
@@ -20,17 +11,38 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
-// ✅ Attach API Routes
-app.use("/api", apiRouter);
+// ✅ Load API Router Manually
+try {
+  const { default: apiRouter } = await import("./routes/api.js");
+  console.log("✅ api.js is successfully imported!");
 
-// ✅ Default Route
-app.get("/", (req, res) => {
-  res.send("🚀 Backend is running! Use /api/... for API requests.");
-});
+  // ✅ Manually Attach Each Route
+  app.post("/api/auth/login", (req, res) => {
+    res.json({ message: "Manual Login Route Works!" });
+  });
 
-// ✅ Export pool (Fixes the Import Issue)
-export { pool };
+  app.post("/api/auth/register", (req, res) => {
+    res.json({ message: "Manual Register Route Works!" });
+  });
 
-// ✅ Start Server
+  app.get("/api/test", (req, res) => {
+    res.json({ message: "API Test Route Works!" });
+  });
+
+} catch (error) {
+  console.error("❌ ERROR: Unable to load api.js", error);
+}
+
+// ✅ Debugging: Log Available Routes
+setTimeout(() => {
+  console.log("✅ Available Routes in Express:");
+  app._router.stack.forEach((r) => {
+    if (r.route && r.route.path) {
+      console.log(`➡ ${r.route.path} (${Object.keys(r.route.methods)})`);
+    }
+  });
+}, 2000);
+
+// ✅ Start Express Server
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
