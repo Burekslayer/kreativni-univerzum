@@ -4,19 +4,10 @@ import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
 import pkg from "pg";
 
-const { Pool } = pkg;
 const apiRouter = express.Router();
 
-// ✅ PostgreSQL Connection
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASS,
-  port: 5432, // ✅ FIXED: Ensure PostgreSQL uses the correct port
-});
-
-
+// ✅ Use the existing database connection from `server.js`
+import { pool } from "../server.js"; // ✅ FIX: Import pool instead of creating a new one
 
 // ✅ Register User
 apiRouter.post(
@@ -54,7 +45,7 @@ apiRouter.post(
 
       res.status(201).json({ token, user: newUser.rows[0] });
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error in Register API:", err);
       res.status(500).json({ message: "Server error" });
     }
   }
@@ -88,7 +79,7 @@ apiRouter.post(
 
       res.json({ token, user: { id: user.rows[0].id, name: user.rows[0].name, email: user.rows[0].email } });
     } catch (err) {
-      console.error(err);
+      console.error("❌ Error in Login API:", err);
       res.status(500).json({ message: "Server error" });
     }
   }
