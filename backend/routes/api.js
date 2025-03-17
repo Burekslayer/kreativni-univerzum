@@ -2,13 +2,20 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
-import pkg from "pg";
 
+import pkg from 'pg';
 const { Pool } = pkg;
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false } // ✅ Required for Railway PostgreSQL
+  connectionString: "postgresql://postgres:sSNsJujEvbviRZwjuftDFgGPrCJmdIoi@switchback.proxy.rlwy.net:13056/railway?sslmode=require",
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
+
+console.log("✅ Using HARD-CODED public Railway URL");
+
+
 
 const apiRouter = express.Router();
 
@@ -27,62 +34,47 @@ setTimeout(() => {
   console.log(apiRouter.stack.map((route) => route.route?.path));
 }, 1000);
 
+// ✅ Register User
 apiRouter.post("/auth/register", async (req, res) => {
+  const { name, email, password } = req.body;
   console.log("✅ Register Route Hit!");
-  console.log("➡ Request Body:", req.body);
-  res.json({ message: "Register is processing request!", requestData: req.body });
-});
+  console.log("➡ Received Data:", { name, email, password });
 
-apiRouter.post("/auth/login", async (req, res) => {
-  console.log("✅ Login Route Hit!");
-  console.log("➡ Request Body:", req.body);
-  res.json({ message: "Login is processing request!", requestData: req.body });
-});
+  try {
+    // Check if user already exists
+    const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    console.log("✅ User Exists Query Executed");
 
-
-
-
-/* // ✅ Register User
-apiRouter.post(
-  "/auth/register",
-  [
-    body("name").notEmpty().withMessage("Name is required"),
-    body("email").isEmail().withMessage("Valid email is required"),
-    body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
-    const { name, email, password } = req.body;
-
-    try {
-      // Check if user exists
-      const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-      if (userExists.rows.length > 0) {
-        return res.status(400).json({ message: "User already exists" });
-      }
-
-      // Hash password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-
-      // Insert user into database
-      const newUser = await pool.query(
-        "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email",
-        [name, email, hashedPassword]
-      );
-
-      // Generate JWT Token
-      const token = jwt.sign({ id: newUser.rows[0].id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-      res.status(201).json({ token, user: newUser.rows[0] });
-    } catch (err) {
-      console.error("❌ Error in Register API:", err);
-      res.status(500).json({ message: "Server error" });
+    if (userExists.rows.length > 0) {
+      console.log("❌ User already exists");
+      return res.status(400).json({ message: "User already exists" });
     }
+
+    // Hash Password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    console.log("✅ Password Hashed:", hashedPassword);
+
+    // Insert User
+    console.log("🔹 Inserting user into database...");
+    const newUser = await pool.query(
+      "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email",
+      [name, email, hashedPassword]
+    );
+    console.log("✅ User successfully inserted into database");
+
+    // Generate JWT Token
+    const token = jwt.sign({ id: newUser.rows[0].id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    console.log("✅ JWT Token Generated");
+
+    res.status(201).json({ token, user: newUser.rows[0] });
+  } catch (err) {
+    console.error("❌ Error in Register API:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
-);
+});
+
+  
 
 // ✅ Login User
 apiRouter.post(
@@ -116,6 +108,6 @@ apiRouter.post(
       res.status(500).json({ message: "Server error" });
     }
   }
-); */
+);
 
 export default apiRouter;
