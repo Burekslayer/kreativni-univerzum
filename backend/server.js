@@ -98,6 +98,9 @@ app.post("/api/auth/register",
 );
 
 // user login route 
+app.get("/api/test", (req, res) => {
+  res.json({ message: "API is working!" });
+});
 
 app.post("/api/auth/login",
   [
