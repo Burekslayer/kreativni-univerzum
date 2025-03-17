@@ -6,20 +6,34 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { body, validationResult } from "express-validator";
 import authMiddleware from "./middleware/authMiddleware.js";
+import bodyParser from "body-parser";
 
 dotenv.config();
 const { Pool } = pkg;
 
+
+
+
+
 const app = express();
+
+app.use("/api", apiRouter); // Ensure this comes BEFORE serving the frontend
+
+// ✅ Serve React frontend (Only if needed)
+app.use(express.static("frontend/build"));
+app.get("*", (req, res) => {
+    res.sendFile(path.resolve("frontend", "build", "index.html"));
+});
 app.use(cors());
 app.use(express.json());
+app.use(bodyParser.json());
 
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
   password: process.env.DB_PASS,
-  port: 5432, // Default PostgreSQL port
+  port: 8080, // Default PostgreSQL port
 });
 
 // Test route
@@ -39,7 +53,7 @@ app.get("/api/paintings", async (req, res) => {
 });
 //kreativni-univerzum-production.up.railway.app
 // Start the server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // User Registration Route
