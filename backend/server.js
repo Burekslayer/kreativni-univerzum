@@ -4,9 +4,14 @@ import dotenv from "dotenv";
 import pkg from "pg";
 import bodyParser from "body-parser";
 import apiRouter from "./routes/api.js";
-import path from "path";
 
 dotenv.config();
+
+const { Pool } = pkg;
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }, // ✅ Required for Railway PostgreSQL
+});
 
 const app = express();
 
@@ -18,28 +23,14 @@ app.use(bodyParser.json());
 // ✅ Attach API Routes
 app.use("/api", apiRouter);
 
-// ✅ Test Root API
+// ✅ Default Route
 app.get("/", (req, res) => {
   res.send("🚀 Backend is running! Use /api/... for API requests.");
 });
 
-// ✅ Test API Availability
-app.get("/api/test", (req, res) => {
-  res.json({ message: "API is working!" });
-});
+// ✅ Export pool (Fixes the Import Issue)
+export { pool };
 
-// ✅ Log All Routes (For Debugging)
-app._router.stack.forEach((r) => {
-  if (r.route && r.route.path) {
-    console.log(`✅ Route available: ${r.route.path}`);
-  }
-});
-
-// ✅ Prevent Frontend From Overriding API Routes
-app.all("/api/*", (req, res) => {
-  res.status(404).json({ message: "API route not found" });
-});
-
-// ✅ Start Express Server
+// ✅ Start Server
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
