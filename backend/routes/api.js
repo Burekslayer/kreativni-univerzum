@@ -16,10 +16,7 @@ const pool = new Pool({
   port: 5432, // ✅ FIXED: Ensure PostgreSQL uses the correct port
 });
 
-// ✅ Test Route
-apiRouter.get("/test", (req, res) => {
-  res.json({ message: "API is working!" });
-});
+
 
 // ✅ Register User
 apiRouter.post(

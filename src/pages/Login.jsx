@@ -14,7 +14,7 @@ const Login = () => {
     setMessage("");
 
     try {
-      const response = await fetch("kreativni-univerzum-production.up.railway.app/api/auth/login", {
+      const response = await fetch("https://kreativni-univerzum-production.up.railway.app/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
